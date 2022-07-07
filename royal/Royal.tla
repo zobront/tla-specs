@@ -81,7 +81,7 @@ Claim(sender, tierId) ==
         LET settled_and_reclaimed == { last_reclaimed_deposits[tierId], last_settled_deposits[<<tierId, sender>>] } IN
         LET start_deposit_id == CHOOSE x \in settled_and_reclaimed: \A y \in settled_and_reclaimed : x >= y IN 
         LET GetUserTierTokenCount(a, b) == IF lda_tokens_by_tier[<<tierId, b>>] = sender THEN a + 1 ELSE a IN
-        LET USER_TOKEN_COUNT == FoldSet( GetUserTierTokenCount, 0, TOKENS ) IN
+        LET USER_TOKEN_COUNT == ApaFoldSet( GetUserTierTokenCount, 0, TOKENS ) IN
         LET new_payment_amount == (((cumulative_deposits[<<tierId, latest_deposit_id[tierId]>>] - cumulative_deposits[<<tierId, start_deposit_id>>]) * USER_TOKEN_COUNT) \div Cardinality(TOKENS)) IN
         LET payment_amount == IF clearBalances THEN new_payment_amount ELSE claimable[<<tierId, sender>>] + new_payment_amount IN
         balances' = [ balances EXCEPT ![sender] = @ + payment_amount, !["contract"] = @ - payment_amount ]
@@ -103,11 +103,11 @@ Reclaim(sender, tierId, depositId) ==
             THEN a 
             ELSE a + (Cardinality(TOKENS) - claims_by_deposit[<<tierId, b>>])
         IN 
-        LET UNCLAIMED_SUPPLY == FoldSet( GetUnclaimedSupply, 0, (1..MAX_DEPOSIT_ID)) IN 
+        LET UNCLAIMED_SUPPLY == ApaFoldSet( GetUnclaimedSupply, 0, (1..MAX_DEPOSIT_ID)) IN 
         LET GetTotalDepositAmounts(a, b) == a + deposit_to_amount[<<tierId, b>>] IN
         LET DepositsByRefundAddr(addr) == { depId \in (1..MAX_DEPOSIT_ID): deposit_to_depositor[<<tierId, depId>>] = addr } IN
-        LET deposit_amounts == [ dep \in DEPOSITORS |-> FoldSet( GetTotalDepositAmounts, 0, DepositsByRefundAddr(dep) )] IN
-        LET total_deposit_amount == FoldSet( GetTotalDepositAmounts, 0, (1..MAX_DEPOSIT_ID) ) IN
+        LET deposit_amounts == [ dep \in DEPOSITORS |-> ApaFoldSet( GetTotalDepositAmounts, 0, DepositsByRefundAddr(dep) )] IN
+        LET total_deposit_amount == ApaFoldSet( GetTotalDepositAmounts, 0, (1..MAX_DEPOSIT_ID) ) IN
         balances' = [ addr \in ADDRESSES |-> IF addr \in DEPOSITORS
                                                 THEN balances[addr] + deposit_amounts[addr]
                                                 ELSE 
@@ -128,7 +128,7 @@ Transfer(sender, to, tierId, tokenId) ==
             LET settled_and_reclaimed == { last_reclaimed_deposits[tierId], last_settled_deposits[<<tierId, sender>>] } IN
             LET start_deposit_id == CHOOSE x \in settled_and_reclaimed: \A y \in settled_and_reclaimed : x >= y IN 
             LET GetUserTierTokenCount(a, b) == IF lda_tokens_by_tier[<<tierId, b>>] = sender THEN a + 1 ELSE a IN
-            LET USER_TOKEN_COUNT == FoldSet( GetUserTierTokenCount, 0, TOKENS ) IN
+            LET USER_TOKEN_COUNT == ApaFoldSet( GetUserTierTokenCount, 0, TOKENS ) IN
             LET payment_amount == (((cumulative_deposits[<<tierId, latest_deposit_id[tierId]>>] - cumulative_deposits[<<tierId, start_deposit_id>>]) * USER_TOKEN_COUNT) \div Cardinality(TOKENS)) IN
             claimable' = [ claimable EXCEPT ![<<tierId, sender>>] = @ + payment_amount ]
     /\ last_settled_deposits' = [ last_settled_deposits EXCEPT ![<<tierId, sender>>] = latest_deposit_id[tierId], ![<<tierId, to>>] = latest_deposit_id[tierId] ]
