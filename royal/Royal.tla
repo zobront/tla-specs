@@ -8,10 +8,6 @@ EXTENDS Integers, Sequences, FiniteSets, Apalache
 \* @typeAlias: TOKEN_ID = Int;
 typedefs == TRUE
 
-\* CONSTANTS
-\*     \* @type: DEPOSIT_ID;
-\*     MAX_DEPOSIT_ID
-
 VARIABLES 
     \* @type: TIER_ID -> DEPOSIT_ID;
     latest_deposit_id,
