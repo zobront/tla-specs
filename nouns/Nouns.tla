@@ -99,7 +99,7 @@ DelegatedPowerShouldEqualBalancePlusDelegatees ==
     \A u \in USERS:
         LET AddBalances(a, b) == a + balances[b] IN 
         LET Delegatees == {x \in USERS : delegates[x] = u} IN
-        LET DelegatedVotes = ApaFoldSet ( AddBalances, 0, Delegatees ) IN 
+        LET DelegatedVotes == ApaFoldSet ( AddBalances, 0, Delegatees ) IN 
         balances[u] + DelegatedVotes = checkpoints[<<u, numCheckpoints[u]>>][1]
 
 ==================================================
